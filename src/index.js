@@ -1,15 +1,8 @@
-/**
- * Express + Telegram bot bootstrap.
- * - Validates required env vars on startup
- * - Serves admin dashboard at /admin.html
- * - Mounts /api/payments/* and /api/admin/* routers
- * - Starts bot in long-polling mode (default) or webhook mode (USE_WEBHOOK=true)
- * - Clean SIGINT/SIGTERM shutdown
- */
+
 require('dotenv').config();
+
 const express = require('express');
 const path = require('path');
-const fs = require('fs');
 
 const { createBot } = require('./bot');
 const payments = require('./payments');
@@ -17,95 +10,115 @@ const admin = require('./admin');
 const draw = require('./draw');
 const { pool } = require('./db');
 
-function required(name, val) {
-  if (!val) {
-    console.error(`[boot] FATAL: environment variable ${name} is missing.`);
-    console.error(`[boot] Copy .env.example to .env and fill in ${name}.`);
+const app = express();
+
+const BOT_TOKEN = process.env.BOT_TOKEN;
+const ADMIN_KEY = process.env.ADMIN_KEY;
+const DATABASE_URL =
+  process.env.DATABASE_URL || process.env.SUPABASE_DB_URL;
+
+const PORT = Number(process.env.PORT || 3000);
+const USE_WEBHOOK =
+  String(process.env.USE_WEBHOOK || 'false').toLowerCase() === 'true';
+const PUBLIC_URL = (process.env.PUBLIC_URL || '').replace(/\/+$/, '');
+
+function checkRequired(name, value) {
+  if (!value) {
+    console.error(`[boot] Missing required environment variable: ${name}`);
     process.exit(1);
   }
 }
 
-const BOT_TOKEN = process.env.BOT_TOKEN;
-const ADMIN_KEY = process.env.ADMIN_KEY;
-const DATABASE_URL = process.env.DATABASE_URL || process.env.SUPABASE_DB_URL;
-const PORT = parseInt(process.env.PORT || '3000', 10);
-const USE_WEBHOOK = String(process.env.USE_WEBHOOK || 'false') === 'true';
-const PUBLIC_URL = process.env.PUBLIC_URL || '';
+checkRequired('BOT_TOKEN', BOT_TOKEN);
+checkRequired('ADMIN_KEY', ADMIN_KEY);
+checkRequired('DATABASE_URL', DATABASE_URL);
 
-required('BOT_TOKEN', BOT_TOKEN);
-required('ADMIN_KEY', ADMIN_KEY);
-required('DATABASE_URL', DATABASE_URL);
-
-if (ADMIN_KEY === 'change-me') {
-  console.warn('[boot] WARNING: ADMIN_KEY is still "change-me". Set a strong key in .env.');
-}
-
-const app = express();
-app.use(express.json());
-
-// Serve admin dashboard
+app.use(express.json({ limit: '1mb' }));
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
-// API routers
+app.get('/health', (req, res) => {
+  res.json({
+    ok: true,
+    service: 'Ethio Lottery',
+    mode: 'DEMO'
+  });
+});
+
 app.use('/api/payments', payments.router);
 app.use('/api/admin', admin.router);
 
-// Health check
-app.get('/health', (req, res) => res.json({ ok: true }));
-
-// Boot
-(async () => {
+async function start() {
   const bot = createBot(BOT_TOKEN);
 
-  // Wire bot reference into modules that need to send messages
   payments.setBot(bot);
   admin.setBot(bot);
   draw.setBot(bot);
 
   if (USE_WEBHOOK) {
     if (!PUBLIC_URL) {
-      console.error('[boot] FATAL: USE_WEBHOOK=true but PUBLIC_URL is not set.');
-      process.exit(1);
+      throw new Error('PUBLIC_URL is required when USE_WEBHOOK=true');
     }
-    const webhookPath = `/webhook`;
-    const secret = BOT_TOKEN.slice(-16);
-    app.use(express.json({ limit: '1mb' }));
-    app.post(webhookPath, (req, res) => bot.handleUpdate(req.body, res));
 
-    try {
-      const hookUrl = `${PUBLIC_URL}${webhookPath}`;
-      await bot.telegram.setWebhook(hookUrl, { secret_token: secret });
-      console.log(`[boot] Webhook set to ${hookUrl}`);
-    } catch (err) {
-      console.error('[boot] setWebhook failed:', err.message);
-    }
-  } else {
-    try {
-      await bot.launch();
-      console.log('[boot] Bot launched in long-polling mode.');
-    } catch (err) {
-      console.error('[boot] Bot launch failed:', err);
-      process.exit(1);
-    }
+    const webhookPath = '/telegram/webhook';
+    const secret = BOT_TOKEN.slice(-16);
+
+    app.post(webhookPath, (req, res, next) => {
+      const suppliedSecret =
+        req.get('X-Telegram-Bot-Api-Secret-Token');
+
+      if (suppliedSecret !== secret) {
+        return res.sendStatus(403);
+      }
+
+      return bot.handleUpdate(req.body, res).catch(next);
+    });
+
+    await bot.telegram.setWebhook(`${PUBLIC_URL}${webhookPath}`, {
+      secret_token: secret,
+      drop_pending_updates: false
+    });
+
+    console.log(`[boot] Webhook configured: ${PUBLIC_URL}${webhookPath}`);
   }
 
   const server = app.listen(PORT, () => {
     console.log(`[boot] HTTP server listening on port ${PORT}`);
-    console.log(`[boot] Admin dashboard: http://localhost:${PORT}/admin.html`);
+    console.log('[boot] Lottery mode: DEMO');
+    console.log(`[boot] Admin dashboard: /admin.html`);
   });
 
-  // Graceful shutdown
-  const shutdown = async (sig) => {
-    console.log(`[boot] ${sig} received, shutting down...`);
-    try { bot.stop(sig); } catch (e) { /* ignore */ }
-    try { server.close(); } catch (e) { /* ignore */ }
-    try { await pool.end(); } catch (e) { /* ignore */ }
+  if (!USE_WEBHOOK) {
+    try {
+      await bot.launch();
+      console.log('[boot] Telegram bot started using long polling.');
+    } catch (err) {
+      console.error('[boot] Telegram bot launch failed:', err.message);
+      server.close();
+      process.exit(1);
+    }
+  }
+
+  const shutdown = async (signal) => {
+    console.log(`[boot] ${signal}: shutting down`);
+
+    try {
+      if (!USE_WEBHOOK) bot.stop(signal);
+    } catch (_) {}
+
+    server.close();
+
+    try {
+      await pool.end();
+    } catch (_) {}
+
     process.exit(0);
   };
-  process.on('SIGINT', () => shutdown('SIGINT'));
-  process.on('SIGTERM', () => shutdown('SIGTERM'));
 
-  process.on('unhandledRejection', (reason) => {
-    console.error('[boot] Unhandled rejection:', reason);
-  });
-})();
+  process.once('SIGINT', () => shutdown('SIGINT'));
+  process.once('SIGTERM', () => shutdown('SIGTERM'));
+}
+
+start().catch((err) => {
+  console.error('[boot] Startup failed:', err.message);
+  process.exit(1);
+});
