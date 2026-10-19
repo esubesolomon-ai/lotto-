@@ -37,6 +37,48 @@ app.use(express.json({ limit: '1mb' }));
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.get('/', (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Ethiopia Lucky Star</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            background: #101827;
+            color: white;
+            text-align: center;
+            padding: 50px 20px;
+          }
+          h1 { color: #e9b949; }
+          a { color: #e9b949; }
+          .card {
+            max-width: 500px;
+            margin: 30px auto;
+            padding: 25px;
+            background: #1b2940;
+            border-radius: 12px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="card">
+          <h1>⭐ Ethiopia Lucky Star</h1>
+          <h2>Lottery Demo</h2>
+          <p>Server status: Online</p>
+          <p>Mode: DEMO</p>
+          <p>Real-money payments are disabled.</p>
+          <p><a href="/health">Check server health</a></p>
+          <p><a href="/admin.html">Open admin dashboard</a></p>
+        </div>
+      </body>
+    </html>
+  `);
+});
+
+app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'admin.html'));
 });
 
