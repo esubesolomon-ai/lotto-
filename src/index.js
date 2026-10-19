@@ -36,12 +36,8 @@ checkRequired('DATABASE_URL', DATABASE_URL);
 app.use(express.json({ limit: '1mb' }));
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
-app.get('/health', (req, res) => {
-  res.json({
-    ok: true,
-    service: 'Ethio Lottery',
-    mode: 'DEMO'
-  });
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'admin.html'));
 });
 
 app.use('/api/payments', payments.router);
