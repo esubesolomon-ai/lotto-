@@ -3,380 +3,372 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ethiopia Lucky Star</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#075638">
+<title>Ethiopia Lucky Star | Demo Lottery</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 :root {
-  --bg:#0b1220; --panel:#151f32; --gold:#f4c75e;
-  --text:#f5f7fb; --muted:#a9b5c9; --green:#54d69a;
+  --green:#075638;
+  --deep:#043d29;
+  --gold:#f5c542;
+  --red:#c83a42;
+  --cream:#fffaf0;
+  --ink:#17271f;
+  --muted:#68766d;
+  --line:#e4e9df;
 }
-* { box-sizing:border-box; }
+* {box-sizing:border-box}
 body {
-  margin:0; background:var(--bg); color:var(--text);
-  font-family:Arial,sans-serif;
+  margin:0;
+  background:#f5f7f1;
+  color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
 }
-header {
-  padding:22px 16px; text-align:center;
-  background:#111b2d; border-bottom:1px solid #354158;
+button {font:inherit;cursor:pointer}
+button:focus-visible {outline:3px solid #e0aa20;outline-offset:3px}
+.topbar {
+  color:white;
+  background:var(--green);
+  padding:18px 16px 22px;
+  position:relative;
+  overflow:hidden;
 }
-.logo { font-size:30px; }
-h1 { margin:8px 0; color:var(--gold); }
-header p { color:var(--muted); margin:5px 0; }
-main { max-width:850px; margin:auto; padding:18px; }
+.topbar:after {
+  content:"✦  ✧  ✦  ✧  ✦";
+  position:absolute;
+  right:-6px;bottom:10px;
+  color:#ffffff14;font-size:48px;letter-spacing:7px;
+  pointer-events:none;
+}
+.wrap {width:min(100%,850px);margin:auto}
+.brand {display:flex;align-items:center;gap:12px}
+.logo {
+  width:48px;height:48px;border-radius:15px;
+  background:var(--gold);color:var(--green);
+  display:grid;place-items:center;font-size:28px;
+  box-shadow:0 4px 0 #0002;
+}
+.brand h1 {margin:0;font-size:20px;letter-spacing:.2px}
+.brand p {margin:3px 0 0;font-size:12px;color:#dcece1}
+.flag {display:flex;height:5px;margin-top:18px;border-radius:4px;overflow:hidden}
+.flag span:nth-child(1){background:#159447;flex:1}
+.flag span:nth-child(2){background:#f5d13c;flex:1}
+.flag span:nth-child(3){background:#d93c44;flex:1}
+main {padding:18px 14px 110px}
+.eyebrow {font-size:11px;font-weight:800;letter-spacing:1.5px;color:var(--green)}
+.hero {
+  border-radius:22px;padding:21px 18px;
+  background:linear-gradient(135deg,#fff8df,#fffdf5);
+  border:1px solid #f0e4bc;
+  position:relative;overflow:hidden;
+}
+.hero h2 {margin:7px 0;font-size:27px;line-height:1.15}
+.hero p {margin:8px 0 0;line-height:1.5;color:#59665d;font-size:14px;max-width:480px}
+.demo-tag {
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 9px;border-radius:99px;background:#e3f3e8;
+  color:#075638;font-size:11px;font-weight:800;
+}
+.section-head {display:flex;justify-content:space-between;align-items:center;margin:25px 2px 12px}
+.section-head h3 {margin:0;font-size:18px}
+.section-head span {font-size:12px;color:var(--muted)}
+.games {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.game {
+  background:white;border:1px solid var(--line);border-radius:16px;
+  padding:14px 12px;text-align:left;color:var(--ink);
+  min-height:112px;transition:.15s;
+}
+.game.active {border:2px solid var(--green);padding:13px 11px;background:#f0f8f1}
+.game .emoji {font-size:24px}
+.game strong {display:block;margin-top:8px;font-size:14px}
+.game small {display:block;color:var(--muted);margin-top:3px;font-size:11px}
+.game.active strong {color:var(--green)}
 .panel {
-  background:var(--panel); padding:20px; border-radius:15px;
-  margin-bottom:18px; border:1px solid #2b3850;
+  margin-top:18px;background:white;border:1px solid var(--line);
+  border-radius:20px;padding:17px 14px;
 }
-h2 { margin-top:0; font-size:20px; }
-.note { color:var(--muted); font-size:14px; line-height:1.5; }
-.status {
-  color:var(--green); font-weight:bold; font-size:12px;
-  letter-spacing:1px;
+.panel h3 {margin:0;font-size:18px}
+.hint {font-size:13px;color:var(--muted);line-height:1.5;margin:7px 0 15px}
+.number-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.digit {
+  height:58px;border-radius:14px;border:1px solid #dce4d9;
+  background:#fbfcf9;font-size:22px;font-weight:800;color:var(--green);
 }
-.numbers {
-  display:grid; grid-template-columns:repeat(7,minmax(0,1fr));
-  gap:8px; margin:18px 0;
+.digit.selected {background:var(--green);color:white;border-color:var(--green);box-shadow:0 3px 0 #043d29}
+.digit:disabled {opacity:.4;cursor:not-allowed}
+.actions {display:flex;gap:9px;margin-top:13px}
+.secondary {
+  border:1px solid #d8e1d6;background:white;color:var(--green);
+  border-radius:12px;padding:11px 12px;font-weight:750;flex:1;
 }
-.ball {
-  aspect-ratio:1; border-radius:50%; border:1px solid #45536c;
-  background:#202d43; color:white; font-weight:bold;
-  cursor:pointer; font-size:clamp(12px,3vw,16px);
+.primary {
+  border:0;background:var(--green);color:white;
+  border-radius:13px;padding:14px 16px;font-weight:800;width:100%;
 }
-.ball.selected {
-  background:var(--gold); color:#172033;
-  border-color:var(--gold); transform:scale(1.03);
-}
-button {
-  padding:13px 15px; border:0; border-radius:9px;
-  background:var(--gold); color:#151c2a;
-  font-weight:bold; cursor:pointer; font-size:15px;
-}
-button.secondary {
-  background:#26344b; color:white; border:1px solid #46536a;
-}
-button:disabled { opacity:.45; cursor:not-allowed; }
-.actions { display:flex; flex-wrap:wrap; gap:10px; }
-.actions button { flex:1; }
-.selected-row,.result-row {
-  display:flex; flex-wrap:wrap; gap:8px; margin:14px 0;
-}
-.mini-ball {
-  display:inline-flex; align-items:center; justify-content:center;
-  width:39px; height:39px; border-radius:50%;
-  background:var(--gold); color:#172033; font-weight:bold;
-}
+.primary:active,.secondary:active,.game:active {transform:scale(.99)}
 .ticket {
-  background:#10192a; border:1px solid #344159;
-  padding:14px; border-radius:10px; margin-top:12px;
+  margin-top:15px;border:1px dashed #b8cdbb;background:#f4faf4;
+  border-radius:15px;padding:15px;display:none;
 }
-.ticket small { color:var(--muted); }
-footer { text-align:center; padding:25px; color:var(--muted); font-size:12px; }
-a { color:var(--gold); }
-@media(max-width:420px) {
-  main { padding:12px; }
-  .panel { padding:15px; }
-  .numbers { gap:5px; }
+.ticket.show {display:block}
+.ticket-top {display:flex;justify-content:space-between;gap:10px;align-items:center}
+.ticket-top strong {font-size:14px}
+.ticket-top span {font-size:10px;font-weight:800;color:#12643c}
+.ticket-digits {display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.ticket-digit {
+  width:39px;height:39px;display:grid;place-items:center;
+  border-radius:50%;background:var(--gold);color:#173a26;font-weight:900;
+}
+.ticket p {font-size:12px;line-height:1.5;color:var(--muted);margin-bottom:0}
+.notice {
+  margin-top:16px;padding:13px;border-radius:13px;
+  background:#fff4e5;color:#76501b;font-size:12px;line-height:1.5;
+}
+.footer {text-align:center;color:#778178;font-size:11px;line-height:1.7;margin:20px 0}
+.bottom {
+  position:fixed;bottom:0;left:0;right:0;
+  padding:12px 14px calc(12px + env(safe-area-inset-bottom));
+  background:#ffffffed;backdrop-filter:blur(10px);
+  border-top:1px solid var(--line);z-index:5;
+}
+.bottom-inner {max-width:822px;margin:auto;display:flex;align-items:center;gap:12px}
+.selection-info {min-width:95px}
+.selection-info strong {display:block;font-size:14px}
+.selection-info small {color:var(--muted);font-size:11px}
+.bottom .primary {flex:1;width:auto;padding:14px 10px}
+.toast {
+  display:none;position:fixed;top:14px;left:50%;transform:translateX(-50%);
+  z-index:20;background:#163e2a;color:white;padding:12px 16px;
+  border-radius:12px;box-shadow:0 5px 25px #0002;font-size:13px;
+  max-width:90%;text-align:center;
+}
+.toast.show {display:block}
+@media(min-width:600px) {
+  main {padding-top:25px}
+  .games {grid-template-columns:repeat(4,minmax(0,1fr))}
+  .number-grid {grid-template-columns:repeat(9,minmax(0,1fr))}
+  .digit {height:54px}
+  .hero {padding:27px}
+  .hero h2 {font-size:32px}
 }
 </style>
 </head>
 <body>
-<header>
-  <div class="logo">⭐</div>
-  <h1>ETHIOPIA LUCKY STAR</h1>
-  <p>Your lottery demo experience</p>
-  <p class="status">● DEMO MODE — NO REAL MONEY</p>
+<header class="topbar">
+  <div class="wrap">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">★</div>
+      <div>
+        <h1>ETHIOPIA LUCKY STAR</h1>
+        <p>Choose your numbers · Imagine your luck</p>
+      </div>
+    </div>
+    <div class="flag" aria-label="Ethiopian-inspired colors">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
 </header>
 
-<main>
+<main class="wrap">
+  <section class="hero">
+    <span class="demo-tag">● DEMO MODE · NO PAYMENTS</span>
+    <h2>Selam, welcome! 🇪🇹</h2>
+    <p>Explore our lottery-style games, choose your lucky digits from 1 to 9, and create a demo ticket.</p>
+  </section>
+
+  <div class="section-head">
+    <h3>Choose a game</h3>
+    <span>7 games available</span>
+  </div>
+  <section class="games" id="games" aria-label="Lottery games">
+    <button class="game active" data-game="Daily Loto" aria-pressed="true">
+      <span class="emoji">☀️</span><strong>Daily Loto</strong><small>Daily demo draw</small>
+    </button>
+    <button class="game" data-game="Weekly Loto" aria-pressed="false">
+      <span class="emoji">📅</span><strong>Weekly Loto</strong><small>Weekly demo draw</small>
+    </button>
+    <button class="game" data-game="Monthly Loto" aria-pressed="false">
+      <span class="emoji">🌙</span><strong>Monthly Loto</strong><small>Monthly demo draw</small>
+    </button>
+    <button class="game" data-game="Accessory Loto" aria-pressed="false">
+      <span class="emoji">💎</span><strong>Accessory Loto</strong><small>Number selection demo</small>
+    </button>
+    <button class="game" data-game="Le Bet Loto" aria-pressed="false">
+      <span class="emoji">🎯</span><strong>Le Bet Loto</strong><small>Number selection demo</small>
+    </button>
+    <button class="game" data-game="Jemaw Loto" aria-pressed="false">
+      <span class="emoji">🌟</span><strong>Jemaw Loto</strong><small>Number selection demo</small>
+    </button>
+    <button class="game" data-game="Beale Loto" aria-pressed="false">
+      <span class="emoji">🎟️</span><strong>Beale Loto</strong><small>Number selection demo</small>
+    </button>
+  </section>
+
   <section class="panel">
-    <h2>🎯 Play the Demo</h2>
-    <p class="note">
-      Select exactly 6 different numbers from 1 to 49.
-      Create a test ticket and try a demo draw.
-      No payment or real prize is involved.
-    </p>
-
-    <div id="numberGrid" class="numbers"></div>
-
-    <p>Selected: <strong id="selectedCount">0 / 6</strong></p>
-    <div id="selectedNumbers" class="selected-row"></div>
-
-    <div class="actions">
-      <button class="secondary" id="randomBtn">🎲 Quick Pick</button>
-      <button class="secondary" id="clearBtn">Clear</button>
-      <button id="ticketBtn" disabled>Create Demo Ticket</button>
+    <h3 id="pickTitle">Choose your lucky numbers</h3>
+    <p class="hint">Tap digits from 1 to 9. Select between 1 and 6 different digits for your demo ticket.</p>
+    <div class="number-grid" id="numberGrid" aria-label="Choose numbers">
+      <button class="digit" data-digit="1">1</button>
+      <button class="digit" data-digit="2">2</button>
+      <button class="digit" data-digit="3">3</button>
+      <button class="digit" data-digit="4">4</button>
+      <button class="digit" data-digit="5">5</button>
+      <button class="digit" data-digit="6">6</button>
+      <button class="digit" data-digit="7">7</button>
+      <button class="digit" data-digit="8">8</button>
+      <button class="digit" data-digit="9">9</button>
     </div>
-    <p id="message" class="note" aria-live="polite"></p>
+    <div class="actions">
+      <button class="secondary" id="quickPick">✦ Quick Pick</button>
+      <button class="secondary" id="clear">Clear</button>
+    </div>
+
+    <div class="ticket" id="ticket" aria-live="polite">
+      <div class="ticket-top">
+        <strong id="ticketGame">Daily Loto</strong>
+        <span>DEMO TICKET</span>
+      </div>
+      <div class="ticket-digits" id="ticketDigits"></div>
+      <p id="ticketText"></p>
+    </div>
+
+    <div class="notice">
+      <strong>Demo only.</strong> This page does not sell tickets, accept deposits,
+      process payments, or award real prizes. Demo selections are not official lottery entries.
+    </div>
   </section>
 
-  <section class="panel">
-    <h2>🏆 Demo Draw</h2>
-    <p class="note">
-      Run a sample draw to compare your tickets with six randomly
-      selected winning numbers. This is a demonstration, not an
-      official lottery draw.
-    </p>
-    <button id="drawBtn">Run Demo Draw</button>
-    <div id="drawResults"></div>
-  </section>
-
-  <section class="panel">
-    <h2>🎟️ My Demo Tickets</h2>
-    <p class="note">
-      Tickets are saved in this browser on this device.
-      They are not yet shared with your Telegram bot or a central database.
-    </p>
-    <div id="ticketHistory"></div>
-    <button class="secondary" id="clearHistoryBtn">Clear Demo History</button>
-  </section>
-
-  <section class="panel">
-    <h2>📱 Telegram</h2>
-    <p class="note">
-      Return to the Telegram bot to continue. Replace the placeholder
-      link below with your real bot username before publishing.
-    </p>
-    <a id="telegramLink" href="https://t.me/" target="_blank"
-       rel="noopener">Open Telegram</a>
-  </section>
+  <div class="footer">
+    ETHIOPIA LUCKY STAR · DEMONSTRATION VERSION<br>
+    Green · Gold · Red — inspired by Ethiopian colors
+  </div>
 </main>
 
-<footer>
-  ETHIOPIA LUCKY STAR · DEMO ONLY · NO PAYMENTS · NO CASH PRIZES
-</footer>
+<div class="bottom">
+  <div class="bottom-inner">
+    <div class="selection-info">
+      <strong id="count">0 selected</strong>
+      <small>Maximum 6 digits</small>
+    </div>
+    <button class="primary" id="preview">Preview demo ticket →</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
 
 <script>
 (() => {
-  const STORAGE_KEY = 'ethioLuckyStarDemoV1';
-  const grid = document.getElementById('numberGrid');
-  const count = document.getElementById('selectedCount');
-  const chosen = document.getElementById('selectedNumbers');
-  const ticketBtn = document.getElementById('ticketBtn');
-  const message = document.getElementById('message');
-  const history = document.getElementById('ticketHistory');
-  const results = document.getElementById('drawResults');
+  const tg = window.Telegram && window.Telegram.WebApp;
+  if (tg) {
+    tg.ready();
+    tg.expand();
+    try {
+      tg.setHeaderColor("#075638");
+      tg.setBackgroundColor("#f5f7f1");
+      tg.enableClosingConfirmation();
+    } catch (e) {}
+  }
 
   let selected = [];
-  let tickets = [];
-  let drawNumber = 0;
-  let lastDraw = null;
+  let currentGame = "Daily Loto";
+  const digitButtons = [...document.querySelectorAll(".digit")];
+  const gameButtons = [...document.querySelectorAll(".game")];
+  const count = document.getElementById("count");
+  const ticket = document.getElementById("ticket");
+  const toast = document.getElementById("toast");
+  let toastTimer;
 
-  try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-    tickets = Array.isArray(saved.tickets) ? saved.tickets : [];
-    drawNumber = Number(saved.drawNumber) || 0;
-    lastDraw = saved.lastDraw || null;
-  } catch (_) {
-    tickets = [];
+  function notify(message) {
+    toast.textContent = message;
+    toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove("show"), 2400);
   }
 
-  function save() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        tickets, drawNumber, lastDraw
-      }));
-    } catch (_) {
-      message.textContent = 'Could not save data in this browser.';
-    }
-  }
-
-  function makeUniqueNumbers(amount, max) {
-    const values = [];
-    while (values.length < amount) {
-      const n = Math.floor(Math.random() * max) + 1;
-      if (!values.includes(n)) values.push(n);
-    }
-    return values.sort((a, b) => a - b);
-  }
-
-  function renderSelection() {
-    count.textContent = selected.length + ' / 6';
-    chosen.replaceChildren();
-
-    selected.slice().sort((a,b) => a-b).forEach(n => {
-      const ball = document.createElement('span');
-      ball.className = 'mini-ball';
-      ball.textContent = n;
-      chosen.appendChild(ball);
+  function render() {
+    digitButtons.forEach(button => {
+      const n = Number(button.dataset.digit);
+      const isSelected = selected.includes(n);
+      button.classList.toggle("selected", isSelected);
+      button.setAttribute("aria-pressed", String(isSelected));
+      button.disabled = !isSelected && selected.length >= 6;
     });
-
-    ticketBtn.disabled = selected.length !== 6;
-
-    grid.querySelectorAll('.ball').forEach(button => {
-      const n = Number(button.dataset.number);
-      button.classList.toggle('selected', selected.includes(n));
-      button.setAttribute('aria-pressed', String(selected.includes(n)));
-    });
+    count.textContent = `${selected.length} selected`;
+    document.getElementById("pickTitle").textContent =
+      `Choose your lucky numbers · ${currentGame}`;
   }
 
-  for (let n = 1; n <= 49; n++) {
-    const button = document.createElement('button');
-    button.className = 'ball';
-    button.type = 'button';
-    button.textContent = n;
-    button.dataset.number = n;
-    button.setAttribute('aria-label', 'Number ' + n);
-    button.setAttribute('aria-pressed', 'false');
-
-    button.addEventListener('click', () => {
+  digitButtons.forEach(button => {
+    button.addEventListener("click", () => {
+      const n = Number(button.dataset.digit);
       if (selected.includes(n)) {
-        selected = selected.filter(x => x !== n);
+        selected = selected.filter(value => value !== n);
       } else if (selected.length < 6) {
         selected.push(n);
-      } else {
-        message.textContent = 'Choose only 6 numbers. Remove one first.';
-        return;
       }
-      message.textContent = '';
-      renderSelection();
+      ticket.classList.remove("show");
+      render();
+      if (tg && tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
     });
-    grid.appendChild(button);
-  }
-
-  document.getElementById('randomBtn').addEventListener('click', () => {
-    selected = makeUniqueNumbers(6, 49);
-    message.textContent = 'Six demo numbers selected.';
-    renderSelection();
   });
 
-  document.getElementById('clearBtn').addEventListener('click', () => {
-    selected = [];
-    message.textContent = '';
-    renderSelection();
-  });
-
-  ticketBtn.addEventListener('click', () => {
-    if (selected.length !== 6) return;
-
-    const ticket = {
-      id: 'ELS-' + Date.now().toString(36).toUpperCase()
-        + '-' + Math.random().toString(36).slice(2, 6).toUpperCase(),
-      numbers: [...selected].sort((a,b) => a-b),
-      createdAt: new Date().toISOString(),
-      drawNumber: drawNumber + 1,
-      matches: null
-    };
-
-    tickets.unshift(ticket);
-    save();
-    renderTickets();
-    selected = [];
-    renderSelection();
-    message.textContent = 'Demo ticket created: ' + ticket.id;
-  });
-
-  function renderTickets() {
-    history.replaceChildren();
-
-    if (!tickets.length) {
-      const p = document.createElement('p');
-      p.className = 'note';
-      p.textContent = 'No demo tickets yet. Choose numbers to create one.';
-      history.appendChild(p);
-      return;
-    }
-
-    tickets.forEach(ticket => {
-      const card = document.createElement('div');
-      card.className = 'ticket';
-
-      const title = document.createElement('strong');
-      title.textContent = ticket.id;
-      card.appendChild(title);
-
-      const small = document.createElement('small');
-      small.textContent = ' · ' + new Date(ticket.createdAt).toLocaleString();
-      card.appendChild(small);
-
-      const row = document.createElement('div');
-      row.className = 'result-row';
-      ticket.numbers.forEach(n => {
-        const ball = document.createElement('span');
-        ball.className = 'mini-ball';
-        ball.textContent = n;
-        row.appendChild(ball);
+  gameButtons.forEach(button => {
+    button.addEventListener("click", () => {
+      currentGame = button.dataset.game;
+      gameButtons.forEach(other => {
+        const active = other === button;
+        other.classList.toggle("active", active);
+        other.setAttribute("aria-pressed", String(active));
       });
-      card.appendChild(row);
-
-      const detail = document.createElement('p');
-      detail.className = 'note';
-      detail.textContent = ticket.matches === null
-        ? 'Waiting for a demo draw'
-        : ticket.matches + ' matching number(s) in the last demo draw';
-      card.appendChild(detail);
-      history.appendChild(card);
+      ticket.classList.remove("show");
+      render();
+      if (tg && tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
     });
-  }
-
-  document.getElementById('drawBtn').addEventListener('click', () => {
-    if (!tickets.length) {
-      results.textContent = 'Create at least one demo ticket first.';
-      return;
-    }
-
-    drawNumber++;
-    const winning = makeUniqueNumbers(6, 49);
-    lastDraw = { number: drawNumber, winning, at: new Date().toISOString() };
-
-    tickets.forEach(ticket => {
-      ticket.matches = ticket.numbers.filter(n => winning.includes(n)).length;
-    });
-
-    save();
-    renderTickets();
-    results.replaceChildren();
-
-    const heading = document.createElement('h3');
-    heading.textContent = 'Demo Draw #' + drawNumber;
-    results.appendChild(heading);
-
-    const row = document.createElement('div');
-    row.className = 'result-row';
-    winning.forEach(n => {
-      const ball = document.createElement('span');
-      ball.className = 'mini-ball';
-      ball.textContent = n;
-      row.appendChild(ball);
-    });
-    results.appendChild(row);
-
-    const p = document.createElement('p');
-    p.className = 'note';
-    p.textContent = 'Demo results only. No real winner or prize is declared.';
-    results.appendChild(p);
   });
 
-  document.getElementById('clearHistoryBtn').addEventListener('click', () => {
-    if (!confirm('Delete all demo tickets and results saved in this browser?')) {
-      return;
-    }
-    tickets = [];
-    drawNumber = 0;
-    lastDraw = null;
-    save();
-    renderTickets();
-    results.replaceChildren();
+  document.getElementById("clear").addEventListener("click", () => {
+    selected = [];
+    ticket.classList.remove("show");
+    render();
   });
 
-  if (lastDraw) {
-    const heading = document.createElement('h3');
-    heading.textContent = 'Last saved demo draw #' + lastDraw.number;
-    results.appendChild(heading);
-    const row = document.createElement('div');
-    row.className = 'result-row';
-    lastDraw.winning.forEach(n => {
-      const ball = document.createElement('span');
-      ball.className = 'mini-ball';
-      ball.textContent = n;
-      row.appendChild(ball);
-    });
-    results.appendChild(row);
-  }
+  document.getElementById("quickPick").addEventListener("click", () => {
+    const numbers = [1,2,3,4,5,6,7,8,9];
+    for (let i = numbers.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [numbers[i], numbers[j]] = [numbers[j], numbers[i]];
+    }
+    selected = numbers.slice(0, 4).sort((a,b) => a-b);
+    ticket.classList.remove("show");
+    render();
+    notify("Four demo numbers selected!");
+    if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred("light");
+  });
 
-  renderSelection();
-  renderTickets();
+  document.getElementById("preview").addEventListener("click", () => {
+    if (!selected.length) {
+      notify("Choose at least one digit first.");
+      return;
+    }
+    document.getElementById("ticketGame").textContent = currentGame;
+    const digits = document.getElementById("ticketDigits");
+    digits.replaceChildren();
+    [...selected].sort((a,b) => a-b).forEach(n => {
+      const ball = document.createElement("span");
+      ball.className = "ticket-digit";
+      ball.textContent = String(n);
+      digits.appendChild(ball);
+    });
+    document.getElementById("ticketText").textContent =
+      "Demo ticket only · No payment taken · Not an official entry.";
+    ticket.classList.add("show");
+    ticket.scrollIntoView({behavior:"smooth", block:"nearest"});
+    if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
+  });
+
+  render();
 })();
 </script>
 </body>
 </html>
-
